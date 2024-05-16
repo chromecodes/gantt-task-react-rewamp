@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styles from "./task-list-header.module.css";
 
 export const TaskListHeaderDefault: React.FC<{
@@ -6,8 +6,16 @@ export const TaskListHeaderDefault: React.FC<{
   rowWidth: string;
   fontFamily: string;
   fontSize: string;
-}> = ({ headerHeight, fontFamily, fontSize, rowWidth }) => {
+  labels: object
+}> = ({ headerHeight, fontFamily,  fontSize, rowWidth, labels }) => {
+  const [lang, setLang] = useState<Record<string, string> | undefined>();
+
+  useEffect(() => {
+    setLang({...labels})
+  }, [labels]);
+  
   return (
+    ( lang !== undefined) ? 
     <div
       className={styles.ganttTable}
       style={{
@@ -27,7 +35,7 @@ export const TaskListHeaderDefault: React.FC<{
             minWidth: rowWidth,
           }}
         >
-          &nbsp;Name
+          &nbsp;{lang['name'] ? `${lang['name'] ?? 'Name'}` : ''}
         </div>
         <div
           className={styles.ganttTable_HeaderSeparator}
@@ -42,7 +50,7 @@ export const TaskListHeaderDefault: React.FC<{
             minWidth: rowWidth,
           }}
         >
-          &nbsp;From
+          &nbsp;{lang['from'] ? `${lang['from'] ?? 'From'}` : ''}
         </div>
         <div
           className={styles.ganttTable_HeaderSeparator}
@@ -57,9 +65,9 @@ export const TaskListHeaderDefault: React.FC<{
             minWidth: rowWidth,
           }}
         >
-          &nbsp;To
+          &nbsp;{lang['to'] ? `${lang['to'] ?? 'To'}` : ''}
         </div>
       </div>
-    </div>
+    </div> : <span></span>
   );
 };

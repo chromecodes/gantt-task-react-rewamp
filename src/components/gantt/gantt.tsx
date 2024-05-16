@@ -33,7 +33,7 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
   ganttHeight = 0,
   viewMode = ViewMode.Day,
   preStepsCount = 1,
-  locale = "en-GB",
+  locale = "zhCN",
   barFill = 60,
   barCornerRadius = 3,
   barProgressColor = "#a3a3ff",
@@ -51,6 +51,15 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
   timeStep = 300000,
   arrowColor = "grey",
   fontFamily = "Arial, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue",
+  dateFormat = "yyyy/dd/MMMM",
+  labels = {
+    name: 'scsadsasdasd',
+    from: 'dasdasdasdass',
+    to: 'Tasdsado',
+    duration: 'asdasdsad',
+    progress: 'Prograsdsadsadess',
+    days: 'dayasdsad(s)'
+  },
   fontSize = "14px",
   arrowIndent = 20,
   todayColor = "rgba(252, 248, 227, 0.5)",
@@ -435,9 +444,11 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
     rowHeight,
     rowWidth: listCellWidth,
     fontFamily,
+    dateFormat,
     fontSize,
     tasks: barTasks,
     locale,
+    labels,
     headerHeight,
     scrollY,
     ganttHeight,
@@ -468,12 +479,15 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
         />
         {ganttEvent.changedTask && (
           <Tooltip
+            locale={locale}
+            labels={labels}
             arrowIndent={arrowIndent}
             rowHeight={rowHeight}
             svgContainerHeight={svgContainerHeight}
             svgContainerWidth={svgContainerWidth}
             fontFamily={fontFamily}
             fontSize={fontSize}
+            dateFormat={dateFormat}
             scrollX={scrollX}
             scrollY={scrollY}
             task={ganttEvent.changedTask}

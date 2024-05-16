@@ -2,11 +2,13 @@ import React, { useRef, useEffect, useState } from "react";
 import { Task } from "../../types/public-types";
 import { BarTask } from "../../types/bar-task";
 import styles from "./tooltip.module.css";
+import {  format } from "date-fns";
 
 export type TooltipProps = {
   task: BarTask;
   arrowIndent: number;
   rtl: boolean;
+  labels: object;
   svgContainerHeight: number;
   svgContainerWidth: number;
   svgWidth: number;
@@ -17,10 +19,15 @@ export type TooltipProps = {
   rowHeight: number;
   fontSize: string;
   fontFamily: string;
+  dateFormat: string;
+  locale: string;
   TooltipContent: React.FC<{
     task: Task;
     fontSize: string;
     fontFamily: string;
+    dateFormat: string;
+    locale: string;
+    labels: object;
   }>;
 };
 export const Tooltip: React.FC<TooltipProps> = ({
@@ -34,9 +41,12 @@ export const Tooltip: React.FC<TooltipProps> = ({
   arrowIndent,
   fontSize,
   fontFamily,
+  dateFormat,
+  locale,
   headerHeight,
   taskListWidth,
   TooltipContent,
+  labels,
 }) => {
   const tooltipRef = useRef<HTMLDivElement | null>(null);
   const [relatedY, setRelatedY] = useState(0);
@@ -107,7 +117,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
       }
       style={{ left: relatedX, top: relatedY }}
     >
-      <TooltipContent task={task} fontSize={fontSize} fontFamily={fontFamily} />
+      <TooltipContent labels={labels} locale={locale} dateFormat={dateFormat} task={task} fontSize={fontSize} fontFamily={fontFamily} />
     </div>
   );
 };
@@ -116,30 +126,60 @@ export const StandardTooltipContent: React.FC<{
   task: Task;
   fontSize: string;
   fontFamily: string;
-}> = ({ task, fontSize, fontFamily }) => {
+  dateFormat: string;
+  locale: string;
+  labels: object;
+}> = ({ task, fontSize, fontFamily, dateFormat , locale, labels}) => {
+  
   const style = {
     fontSize,
     fontFamily,
   };
+  
+  const [localeVar, setLocaleVar] = useState<Locale | undefined>();
+  const [lang, setLang] = useState<Record<string, string> | undefined>();
+
+
+  function convertLangCode(input : string) {
+    const pattern = /^([a-z]{2})(-?)([A-Z])/;
+    return input.replace(pattern, (match, p1, p2, p3) => p2 ? match : `${p1}-${p3}`);
+  }
+
+  useEffect(() => {
+    import(`date-fns/locale/${convertLangCode(locale)}/index.js`).then((module) => {
+      setLocaleVar(module.default);
+    });
+  }, [locale]);
+
+  useEffect(() => {
+    setLang({...labels})
+  }, [labels]);
+
   return (
+    (localeVar !== undefined && lang !== undefined) ? 
     <div className={styles.tooltipDefaultContainer} style={style}>
       <b style={{ fontSize: fontSize + 6 }}>{`${
         task.name
-      }: ${task.start.getDate()}-${
-        task.start.getMonth() + 1
-      }-${task.start.getFullYear()} - ${task.end.getDate()}-${
-        task.end.getMonth() + 1
-      }-${task.end.getFullYear()}`}</b>
+      }: ${format(task.start, dateFormat, {locale: localeVar})} - ${format(task.end, dateFormat, {locale: localeVar})}`}</b>
       {task.end.getTime() - task.start.getTime() !== 0 && (
-        <p className={styles.tooltipDefaultContainerParagraph}>{`Duration: ${~~(
+        <p className={styles.tooltipDefaultContainerParagraph}>{
+          `${lang['duration'] ?? 'Duration'}: ${~~(
           (task.end.getTime() - task.start.getTime()) /
           (1000 * 60 * 60 * 24)
         )} day(s)`}</p>
       )}
 
       <p className={styles.tooltipDefaultContainerParagraph}>
-        {!!task.progress && `Progress: ${task.progress} %`}
+      {!!task.progress && (
+          <span>
+            {lang['progress'] ? (
+              `${lang['progress'] ?? 'Progress'}: ${task.progress} %`
+            ) : (
+              ''
+            )}
+          </span>
+        )}
       </p>
-    </div>
+    </div> : <span></span>
   );
 };

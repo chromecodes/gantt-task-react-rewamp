@@ -1,25 +1,7 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import styles from "./task-list-table.module.css";
 import { Task } from "../../types/public-types";
-
-const localeDateStringCache = {};
-const toLocaleDateStringFactory =
-  (locale: string) =>
-  (date: Date, dateTimeOptions: Intl.DateTimeFormatOptions) => {
-    const key = date.toString();
-    let lds = localeDateStringCache[key];
-    if (!lds) {
-      lds = date.toLocaleDateString(locale, dateTimeOptions);
-      localeDateStringCache[key] = lds;
-    }
-    return lds;
-  };
-const dateTimeOptions: Intl.DateTimeFormatOptions = {
-  weekday: "short",
-  year: "numeric",
-  month: "long",
-  day: "numeric",
-};
+import {  format } from "date-fns";
 
 export const TaskListTableDefault: React.FC<{
   rowHeight: number;
@@ -27,6 +9,7 @@ export const TaskListTableDefault: React.FC<{
   fontFamily: string;
   fontSize: string;
   locale: string;
+  dateFormat: string;
   tasks: Task[];
   selectedTaskId: string;
   setSelectedTask: (taskId: string) => void;
@@ -38,15 +21,24 @@ export const TaskListTableDefault: React.FC<{
   fontFamily,
   fontSize,
   locale,
+  dateFormat,
   onExpanderClick,
 }) => {
-  const toLocaleDateString = useMemo(
-    () => toLocaleDateStringFactory(locale),
-    [locale]
-  );
+  const [localeVar, setLocaleVar] = useState<Locale | undefined>();
+
+  function convertLangCode(input : string) {
+    const pattern = /^([a-z]{2})(-?)([A-Z])/;
+    return input.replace(pattern, (match, p1, p2, p3) => p2 ? match : `${p1}-${p3}`);
+  }
+
+  useEffect(() => {
+    import(`date-fns/locale/${convertLangCode(locale)}/index.js`).then((module) => {
+      setLocaleVar(module.default);
+    });
+  }, [locale]);
 
   return (
-    <div
+    (locale !== undefined) ? <div
       className={styles.taskListWrapper}
       style={{
         fontFamily: fontFamily,
@@ -96,7 +88,7 @@ export const TaskListTableDefault: React.FC<{
                 maxWidth: rowWidth,
               }}
             >
-              &nbsp;{toLocaleDateString(t.start, dateTimeOptions)}
+              &nbsp;{format(t.start, dateFormat, {locale :  localeVar})}
             </div>
             <div
               className={styles.taskListCell}
@@ -105,11 +97,11 @@ export const TaskListTableDefault: React.FC<{
                 maxWidth: rowWidth,
               }}
             >
-              &nbsp;{toLocaleDateString(t.end, dateTimeOptions)}
+              &nbsp;{format(t.end, dateFormat, {locale :  localeVar})}
             </div>
           </div>
         );
       })}
-    </div>
+    </div> : <div></div>
   );
 };

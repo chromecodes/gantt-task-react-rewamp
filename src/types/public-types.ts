@@ -77,12 +77,14 @@ export interface EventOption {
 export interface DisplayOption {
   viewMode?: ViewMode;
   viewDate?: Date;
+  dateFormat?: string;
   preStepsCount?: number;
   /**
    * Specifies the month name language. Able formats: ISO 639-2, Java Locale
    */
   locale?: string;
   rtl?: boolean;
+  labels?: object;
 }
 
 export interface StylingOption {
@@ -116,13 +118,17 @@ export interface StylingOption {
   TooltipContent?: React.FC<{
     task: Task;
     fontSize: string;
+    dateFormat: string;
     fontFamily: string;
+    locale: string;
+    labels: object;
   }>;
   TaskListHeader?: React.FC<{
     headerHeight: number;
     rowWidth: string;
     fontFamily: string;
     fontSize: string;
+    labels: object;
   }>;
   TaskListTable?: React.FC<{
     rowHeight: number;
@@ -132,6 +138,7 @@ export interface StylingOption {
     locale: string;
     tasks: Task[];
     selectedTaskId: string;
+    dateFormat: string;
     /**
      * Sets selected task by id
      */

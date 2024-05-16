@@ -18,7 +18,7 @@ export function initTasks() {
       end: new Date(
         currentDate.getFullYear(),
         currentDate.getMonth(),
-        2,
+        1,
         12,
         28
       ),
